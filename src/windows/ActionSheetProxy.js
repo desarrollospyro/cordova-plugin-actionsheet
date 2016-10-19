@@ -111,6 +111,13 @@ ActionSheet.prototype._addTitle = function (label, destinationCtrl) {
 ActionSheet.prototype._addDestructiveButton = function (label, destinationCtrl) {
     if (label && destinationCtrl) {
         var destructive_btn = this._generateButton(label, this._getDestructiveButtonStyle());
+        destructive_btn.setAttribute("id", "destructive");
+        destructive_btn.onclick = function () {
+          if (ActionSheet.prototype.successCallBack) {
+            ActionSheet.prototype.successCallBack(1);
+            ActionSheet.prototype.hide();           
+          }
+        }
         destinationCtrl.appendChild(destructive_btn);
     }
 }
@@ -119,7 +126,10 @@ ActionSheet.prototype._addCancelButton = function (label, destinationCtrl) {
     if (label && destinationCtrl) {
         var cancel_btn = this._generateButton(label, this._getCancelButtonStyle());
         cancel_btn.onclick = function () {
-            ActionSheet.prototype.hide();
+          if (ActionSheet.prototype.successCallBack) {
+            ActionSheet.prototype.successCallBack(0);
+            ActionSheet.prototype.hide();             
+          }
         }
 
         destinationCtrl.appendChild(cancel_btn);
@@ -132,10 +142,14 @@ ActionSheet.prototype._addbuttons = function (lables, destinationCtrl) {
             var btn = this._generateButton(lables[i], this._getButtonStyle());
 	    (function (i) {
             	btn.onclick = function () {
-                    if (ActionSheet.prototype.successCallBack) {
-                    	ActionSheet.prototype.successCallBack(i + 1);
-                    	ActionSheet.prototype.hide();
-                    }                
+                if (ActionSheet.prototype.successCallBack) {
+                  if (document.getElementById("destructive")) {
+                    ActionSheet.prototype.successCallBack(i + 2);
+                  } else {
+                    ActionSheet.prototype.successCallBack(i + 1);
+                  }
+                  ActionSheet.prototype.hide();
+                }                
             	}
             })(i);
             destinationCtrl.appendChild(btn);
@@ -197,21 +211,26 @@ ActionSheet.prototype._generateTitle = function (textLebel) {
 }
 
 ActionSheet.prototype._injectWinJsFlyoutHTML = function () {
-    var divSetPoint = document.createElement("div");
+  var divSetPoint = document.getElementById("actionSheetSetPoint");
+  if (divSetPoint == null) {
+    divSetPoint = document.createElement("div");
     divSetPoint.setAttribute("id", "actionSheetSetPoint");
     divSetPoint.setAttribute("aria-haspopup", "true");
     divSetPoint.setAttribute("style", "visibility:collapse");
-
-    var flyoutDiv = document.createElement("div");
+  }
+  var flyoutDiv = document.getElementById("fly-test");
+  if (flyoutDiv == null){
+    flyoutDiv = document.createElement("div");
     flyoutDiv.setAttribute("data-win-control", "WinJS.UI.Flyout");
     flyoutDiv.setAttribute("id", "fly-test");
     flyoutDiv.setAttribute("style", this._getMainDivStyle());
-
-    var internalDiv = document.createElement("div");
+  }
+  var internalDiv = document.getElementById("actionSheetProxyFlyoutDiv");
+  if (internalDiv == null){
+    internalDiv = document.createElement("div");
     internalDiv.setAttribute("id", "actionSheetProxyFlyoutDiv");
-
-    flyoutDiv.appendChild(internalDiv);
-
+    flyoutDiv.appendChild(internalDiv); 
+  }
     document.body.appendChild(flyoutDiv);
     document.body.appendChild(divSetPoint);
 }
